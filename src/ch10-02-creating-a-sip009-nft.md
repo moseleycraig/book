@@ -151,19 +151,14 @@ NFT. Our practice NFT does not have a website so we can return `none`.
 )
 ```
 
-However, even if we did have a website, there are a few challenges to
-implementing this seemingly straightforward function. Usually, these functions
-return a base URL with the token ID stuck behind it. The current version of
-Clarity (2.0) does not feature a intuitive way to do this. Something like the
-following is impossible because there is no `to-ascii` function to turn a number
-into an ASCII string type.
+If we did have a website, we could append the `token-id` to a URL prefix to
+generate the complete URL:
 
 ```Clarity,{"nonplayable":true}
-(concat "https://domain.tld/metadata/" (to-ascii token-id))
+(define-read-only (get-token-uri (token-id uint))
+  (ok (concat "https://domain.tld/metadata/" (int-to-ascii token-id)))
+)
 ```
-
-It does not mean that turning a number into a string cannot be done. It is just
-way more strenuous than it should be. Clarity 2.1 will solve the issue.
 
 #### get-owner
 
@@ -178,12 +173,12 @@ The `get-owner` function only has to wrap the built-in `nft-get-owner?`.
 #### transfer
 
 The `transfer` function should assert that the `sender` is equal to the
-`tx-sender` to prevent principals from transferring tokens they do not own.
+`contract-caller` to prevent principals from transferring tokens they do not own.
 
 ```Clarity,{"nonplayable":true}
 (define-public (transfer (token-id uint) (sender principal) (recipient principal))
 	(begin
-		(asserts! (is-eq tx-sender sender) err-not-token-owner)
+		(asserts! (is-eq contract-caller sender) err-not-token-owner)
 		(nft-transfer? stacksies token-id sender recipient)
 	)
 )
@@ -192,7 +187,7 @@ The `transfer` function should assert that the `sender` is equal to the
 #### mint
 
 We will also add a convenience function to mint new tokens. A simple guard to
-check if the `tx-sender` is equal to the `contract-owner` constant will prevent
+check if the `contract-caller` is equal to the `contract-owner` constant will prevent
 others from minting new tokens. The function will increment the last token ID
 and then mint a new token for the recipient.
 
@@ -202,7 +197,7 @@ and then mint a new token for the recipient.
 		(
 			(token-id (+ (var-get last-token-id) u1))
 		)
-		(asserts! (is-eq tx-sender contract-owner) err-owner-only)
+		(asserts! (is-eq contract-caller contract-owner) err-owner-only)
 		(try! (nft-mint? stacksies token-id recipient))
 		(var-set last-token-id token-id)
 		(ok token-id)
