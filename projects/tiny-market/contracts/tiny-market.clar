@@ -57,7 +57,7 @@
 (define-private (transfer-nft (token-contract <nft-trait>) (token-id uint) (sender principal) (recipient principal))
 	(contract-call? token-contract transfer token-id sender recipient)
 )
-
+;; repo error <ft-trait> changed to <nft-trait>?
 (define-private (transfer-ft (token-contract <ft-trait>) (amount uint) (sender principal) (recipient principal))
 	(contract-call? token-contract transfer amount sender recipient none)
 )

@@ -1,6 +1,8 @@
 import { Clarinet, Tx, Chain, Account, types } from 'https://deno.land/x/clarinet@v1.3.0/index.ts';
 import { assertEquals } from 'https://deno.land/std@0.125.0/testing/asserts.ts';
 
+// a const for each STX object
+
 const contractName = 'tiny-market';
 
 const defaultNftAssetContract = 'sip009-nft';
